@@ -2,6 +2,15 @@
 
 This directory contains automation scripts for configuring cross-region replication in Oracle Cloud Infrastructure (OCI). The scripts are designed to simplify and automate disaster recovery setup for different storage layers.
 
+## Installation
+
+To get started, clone this repository to your local machine:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+cd YOUR_REPO_NAME
+```
+
 ## Scripts Overview
 
 1. **`Enable_Object_Storage_replication.sh`**
