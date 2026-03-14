@@ -7,8 +7,8 @@ This directory contains automation scripts for configuring cross-region replicat
 To get started, clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
+git clone https://github.com/mmitkees/OCI-Automation.git
+cd OCI-Automation
 ```
 
 ## Scripts Overview
