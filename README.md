@@ -1,6 +1,10 @@
-# Storage Replication Automation
+# OCI Automation
 
-This directory contains automation scripts for configuring cross-region replication in Oracle Cloud Infrastructure (OCI). The scripts are designed to simplify and automate disaster recovery setup for different storage layers.
+This repository contains automation scripts for Oracle Cloud Infrastructure (OCI). The scripts are designed to simplify and automate common infrastructure tasks.
+
+---
+
+## Scripts Overview
 
 ## Installation
 
@@ -11,9 +15,58 @@ git clone https://github.com/mmitkees/OCI-Automation.git
 cd OCI-Automation
 ```
 
+---
+
 ## Scripts Overview
 
+### 🌐 Networking
+
+#### [1. `Networking/create_hub_vcn.py`](file:///Users/mmitkees/OCI-Automation/Networking/create_hub_vcn.py)
+Provisions a **Hub-and-Spoke** network with an OCI **Network Firewall (NGFW)** and a **Dynamic Routing Gateway (DRG)**.
+
+*   **Capabilities:**
+    *   Creates a `hub_resources` compartment under a given parent.
+    *   Provisions **VCN_hub** with Internet, NAT, and dedicated firewall subnets.
+    *   Deploys **OCI Network Firewall (NGFW)** with an "allow-all" policy.
+    *   Configures **Hub-and-Spoke routing**: Binds spoke VCN traffic through the Hub firewall.
+    *   **Parallel Mode (Default)**: Launches the firewall (20-40 min task) in the background and finishes routing immediately if possible.
+
+*   **Usage Example:**
+    ```bash
+    python3 Networking/create_hub_vcn.py \
+      --parent-compartment <OCID> \
+      --region <REGION_NAME> \
+      --compartment-name <NAME> \
+      --spoke-vcns <OCID_1> <OCID_2> \
+      --yes
+    ```
+
+#### [2. `Networking/destroy_hub_vcn.py`](file:///Users/mmitkees/OCI-Automation/Networking/destroy_hub_vcn.py)
+Undoes all routing changes and deletes all resources created by the creation script in the correct dependency order.
+
+*   **Capabilities:**
+    *   Undoes `0.0.0.0/0 -> DRG` routes in **all** spoke route tables (safely preserving others).
+    *   Deletes DRG attachments, the DRG, and the Hub VCN.
+    *   Deletes the Network Firewall and its policy.
+    *   Outputs a **summary table** of all deleted resources.
+
+*   **Usage Example:**
+    ```bash
+    python3 Networking/destroy_hub_vcn.py \
+      --parent-compartment <OCID> \
+      --region <REGION_NAME> \
+      --compartment-name <NAME> \
+      --spoke-vcns <OCID_1> \
+      --yes
+    ```
+
+---
+
+### 📦 Storage (Object & Volumes)
+... (Existing sections continue below)
+
 1. **`Enable_Object_Storage_replication.sh`**
+
    - **Type:** Bash Script (Uses OCI CLI)
    - **Purpose:** Automates cross-region replication for Object Storage buckets.
    - **Capabilities:**
