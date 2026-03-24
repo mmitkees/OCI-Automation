@@ -69,17 +69,27 @@ def destroy_all(parent_compartment_id, region, hub_cidr, spoke_vcn_ids=None, wai
     # 1. Locate compartment
     hub_compartment_id = None
     if not dry_run:
-        compartments = oci.pagination.list_call_get_all_results(
-            identity_client.list_compartments,
-            parent_compartment_id,
-            name=compartment_name,
-            lifecycle_state="ACTIVE"
-        ).data
-        if not compartments:
-            _log(f"  ⚠  Compartment '{compartment_name}' not found. Nothing to destroy?")
-            return
-        hub_compartment_id = compartments[0].id
-        _log(f"  ✔  Found compartment {compartment_name}: {hub_compartment_id}")
+        # Check if parent_compartment_id already matches the name
+        try:
+            parent = identity_client.get_compartment(parent_compartment_id).data
+            if parent.name == compartment_name and parent.lifecycle_state == "ACTIVE":
+                hub_compartment_id = parent_compartment_id
+                _log(f"  ✔  Parent ID is already the target compartment '{compartment_name}': {hub_compartment_id}")
+        except:
+            pass
+
+        if not hub_compartment_id:
+            compartments = oci.pagination.list_call_get_all_results(
+                identity_client.list_compartments,
+                parent_compartment_id,
+                name=compartment_name,
+                lifecycle_state="ACTIVE"
+            ).data
+            if not compartments:
+                _log(f"  ⚠  Compartment '{compartment_name}' not found. Nothing to destroy?")
+                return
+            hub_compartment_id = compartments[0].id
+            _log(f"  ✔  Found compartment {compartment_name}: {hub_compartment_id}")
 
     # 2. Undo Spoke Routing
     _log("\n[1/8] Undoing spoke VCN routing …")
@@ -114,7 +124,27 @@ def destroy_all(parent_compartment_id, region, hub_cidr, spoke_vcn_ids=None, wai
         hub_drg = next((d for d in drgs if d.display_name == "hub-drg" and d.lifecycle_state != "TERMINATED"), None)
         
         if hub_drg:
-            # Detach all VCNs - Search in both Hub and Spoke compartments
+            # Phase 2 Cleanup: Remove DRG Transit Rules
+            hub_ats = oci.pagination.list_call_get_all_results(vcn_client.list_drg_attachments, hub_compartment_id, drg_id=hub_drg.id).data
+            hub_at = next((a for a in hub_ats if a.display_name == "hub-vcn-attachment"), None)
+            if hub_at and hub_at.drg_route_table_id:
+                _log(f"  Clearing Transit Routes from DRG Route Table: {hub_at.drg_route_table_id} …")
+                try:
+                    # Fetch rules and filter out the default route
+                    drg_rt = vcn_client.get_drg_route_table(hub_at.drg_route_table_id).data
+                    # We use remove_drg_route_rules with the specific rule or just clear if possible
+                    # For simplicity, we'll try to remove the 0.0.0.0/0 rule if it exists
+                    vcn_client.remove_drg_route_rules(
+                        hub_at.drg_route_table_id,
+                        oci.core.models.RemoveDrgRouteRulesDetails(
+                            route_rule_ids=[r.id for r in vcn_client.list_drg_route_rules(hub_at.drg_route_table_id).data if r.destination == "0.0.0.0/0"]
+                        )
+                    )
+                    _log("  ✔  DRG Transit Routes cleared")
+                except Exception as e:
+                    _log(f"  ⚠  Could not clear DRG transit rules: {e}")
+
+            # Detach all VCNs
             search_compartments = list(set([hub_compartment_id] + [vcn_client.get_vcn(sid).data.compartment_id for sid in spoke_vcn_ids]))
             
             attachments = []

@@ -1,68 +1,40 @@
-# OCI Networking Automation – Hub & Spoke with NGFW
+# OCI Hub-and-Spoke Networking (Zero-Downtime)
 
-This folder contains Python scripts to automate the provisioning and destruction of a Hub-and-Spoke network architecture in Oracle Cloud Infrastructure (OCI), featuring an **OCI Network Firewall (NGFW)** for centralized traffic inspection.
+This folder contains scripts to provision a Hub-and-Spoke network with an OCI Network Firewall (NGFW).
 
-## Architecture Highlights
-- **Hub VCN**: Centralized VCN (`VCN_hub`) containing the Network Firewall, Internet Gateway, and NAT Gateway.
-- **Spoke VCNs**: One or more workload VCNs connected via a **Dynamic Routing Gateway (DRG)**.
-- **Traffic Interception**: All internet-bound (`0.0.0.0/0`) traffic from spoke subnets is redirected to the Hub VCN and inspected by the NGFW before exiting via NAT/Internet gateways.
-- **NGFW Policy**: Default "Allow All" security policy (`hub-ngfw-allow-all`) created automatically.
+## Deployment Workflow
 
----
+To avoid spoke downtime during the 40-minute firewall provisioning window, the deployment is split into two phases:
 
-## 🚀 Creation Script (`create_hub_vcn.py`)
+### Phase 1: Provisioning (Passive)
+Run `create_hub_vcn.py` to build the infrastructure. This script creates the compartment, VCN, gateways, and the firewall instance, but **does not** redirect traffic.
 
-Provisions the entire Hub environment and wires spoke VCNs.
-
-### Prerequisites
-- Python 3.x
-- OCI Python SDK (`pip install oci`)
-- Configured OCI credentials (typically in `~/.oci/config`)
-
-### Usage
 ```bash
 python3 create_hub_vcn.py \
-    --parent-compartment <PARENT_OCID> \
-    --region <REGION_NAME> \
-    --compartment-name <COMP_NAME_OR_V2> \
-    --spoke-vcns <SPOKE_VCN_OCID_1> <SPOKE_VCN_OCID_2> \
+    --parent-compartment <OCID> \
+    --region <region> \
+    --hub-cidr 10.53.0.0/16 \
+    --spoke-vcns <OCID_SPOKE> \
     --yes
 ```
 
-### Key Features
-- **Flexible Naming**: Use `--compartment-name` to deploy to a new compartment (e.g., `hub_resources_v2`) if the old one is still in OCI's `DELETING` status.
-- **Resilient Creation**: Handles `409 Conflict` errors by checking for `DELETING` compartments and providing clear retry instructions.
-- **Summary Table**: Outputs a clear table of all created resources and OCIDs.
-- **Dry-Run**: Use `--dry-run` to preview actions without making API calls.
+### Phase 2: Activation (Active)
+Run `go_live_hubspoke.py` once the firewall is **ACTIVE**. This script "flips the switch" by updating DRG transit routes and Spoke VCN route tables.
 
----
-
-## 🗑️ Destruction Script (`destroy_hub_vcn.py`)
-
-Cleans up all resources created by the creation script in the correct dependency order.
-
-### Usage
 ```bash
-python3 destroy_hub_vcn.py \
-    --parent-compartment <PARENT_OCID> \
-    --region <REGION_NAME> \
-    --compartment-name <COMP_NAME> \
-    --spoke-vcns <SPOKE_VCN_OCID_1> \
-    --yes
+python3 go_live_hubspoke.py \
+    --hub-compartment <HUB_OCID> \
+    --region <region> \
+    --spoke-vcns <OCID_SPOKE>
 ```
 
-### Key Features
-- **Custom Compartment**: Targets the specific `--compartment-name` used during creation.
-- **Safe Undo**: Only removes `0.0.0.0/0` routes if they point to the DRG, preserving pre-existing internet access.
-- **Dependency Handling**: Clears route rules before deleting gateways and waits for long deletions (NGFW).
-- **Summary Table**: Lists every resource deleted or reverted during the run.
+## Key Scripts
 
----
+- [create_hub_vcn.py](create_hub_vcn.py): Provisions the Hub (Passive).
+- [go_live_hubspoke.py](go_live_hubspoke.py): Activates 'Full Interception' (Active).
+- [destroy_hub_vcn.py](destroy_hub_vcn.py): Safely cleans up all resources.
 
-## 🔍 Verification
-1. Run the creation script.
-2. Once the Firewall is **ACTIVE**, verify connectivity from a spoke instance:
-   ```bash
-   curl -sI https://www.google.com
-   ```
-3. Check the NGFW metrics in the OCI Console to see traffic hits.
+## Benefits of Two-Stage Deployment
+1. **Zero Downtime**: Spoke VCNs keep their original internet behavior until the firewall is ready.
+2. **Infrastructure Validation**: You can verify the Hub VCN and Firewall Policy before any traffic is routed.
+3. **Safe Interception**: The enable script performs a health check on the firewall before updating routes.
