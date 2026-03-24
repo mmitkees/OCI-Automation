@@ -1,6 +1,8 @@
 # 🚀 OCI Automation Toolkit
 
-Automating OCI Hub-and-Spoke Networking, Security, and Storage Replication for production-ready cloud environments.
+Automating OCI Hub-and-Spoke Networking, Security, and Storage Replication for production-ready cloud environments. This repository provides a unified framework for deploying scalable, secure, and disaster-recovery-ready infrastructure on Oracle Cloud Infrastructure.
+
+---
 
 ## 🏢 Hub-and-Spoke Networking with Network Firewall (NGFW)
 
@@ -36,15 +38,31 @@ The deployment is split into two phases to ensure the Network Firewall is fully 
 
 ### 📜 Key Scripts
 
--   **[create_hub_vcn.py](Networking/create_hub_vcn.py)**: Provisions the Hub infrastructure in a passive state.
--   **[go_live_hubspoke.py](Networking/go_live_hubspoke.py)**: Activates traffic interception and routing.
--   **[destroy_hub_vcn.py](Networking/destroy_hub_vcn.py)**: Safely decommissions the Hub and restores original spoke routing.
+-   **[Networking/create_hub_vcn.py](Networking/create_hub_vcn.py)**: Provisions the Hub infrastructure in a passive state.
+-   **[Networking/go_live_hubspoke.py](Networking/go_live_hubspoke.py)**: Activates traffic interception and routing.
+-   **[Networking/destroy_hub_vcn.py](Networking/destroy_hub_vcn.py)**: Safely decommissions the Hub and restores original spoke routing.
+
+> [!NOTE]
+> Review the [Networking/README.md](Networking/README.md) for detailed architecture and advanced configuration options.
 
 ---
 
-## ☁️ Object Storage Replication
+## ☁️ Object Storage & Volume Replication
 
-Scripts for automating OCI Object Storage cross-region replication and the necessary IAM policy deployments are located in the `Storage/` directory. These are currently archived but functional for reference.
+This module automates the setup of cross-region replication for disaster recovery. It handles both Block Store (Volume) and Object Store (Bucket) replication with automated IAM policy creation.
+
+-   **Object Storage**: Automates bucket replication policies and required service permissions for cross-region data transfer.
+-   **Block/Boot Volumes**: Uses the OCI SDK to enable native volume replication across regions.
+
+### 📍 Quick Start
+
+```bash
+# Example: Enable Block Volume replication via SDK
+python3 Storage/enable_cross_region_replication_sdk.py --src me-abudhabi-1 --dest eu-zurich-1 --compartment <OCID> --yes
+```
+
+> [!TIP]
+> Check out the [Storage/README.md](Storage/README.md) for full usage instructions, CLI flags, and SDK code examples.
 
 ---
 
@@ -56,7 +74,8 @@ Scripts for automating OCI Object Storage cross-region replication and the neces
 │   ├── create_hub_vcn.py
 │   ├── go_live_hubspoke.py
 │   └── destroy_hub_vcn.py
-├── Storage/             # Object Storage replication scripts
+├── Storage/             # Object Storage & Volume replication
+│   ├── README.md       # Detailed storage documentation & API usage
 │   ├── Enable_Object_Storage_replication.sh
 │   └── enable_cross_region_replication_sdk.py
 ├── keys/                # Secure storage for API/SSH keys (Ignored by Git)
@@ -65,6 +84,7 @@ Scripts for automating OCI Object Storage cross-region replication and the neces
 
 ---
 
-## 📄 Documentation
+## 📄 Documentation Index
 
--   [Networking/README.md](Networking/README.md): Detailed Hub architecture, network flow diagrams, and advanced parameters.
+-   **[Networking/README.md](Networking/README.md)**: Detailed Hub architecture, network flow diagrams, and advanced parameters.
+-   **[Storage/README.md](Storage/README.md)**: Object Storage and Block Volume replication detailed guide.
