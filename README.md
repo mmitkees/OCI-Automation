@@ -19,22 +19,10 @@ A production-ready Hub-and-Spoke architecture designed for **Zero Downtime**. Th
 The deployment is split into two phases to ensure the Network Firewall is fully functional before any traffic is redirected.
 
 1.  **Phase 1 (Provisioning)**: Creates the Hub infrastructure (Compartment, VCN, IGW, NAT, DRG, Firewall Policy, and Firewall Instance). **Important**: This step is non-disruptive.
-    ```bash
-    python3 Networking/create_hub_vcn.py \
-        --parent-compartment <OCID> \
-        --region <region> \
-        --spoke-vcns <SPOKE_VCN_OCID1>,<SPOKE_VCN_OCID2>
-    ```
-
 2.  **Wait**: Wait for the Network Firewall to reach the **ACTIVE** state (approximately 20–40 minutes).
-
 3.  **Phase 2 (Activation)**: Intercept traffic from spokes once the firewall is ready. This script updates DRG transit routing and Spoke VCN route tables to point to the firewall.
-    ```bash
-    python3 Networking/go_live_hubspoke.py \
-        --hub-compartment <HUB_OCID> \
-        --region <region> \
-        --spoke-vcns <SPOKE_VCN_OCID1>,<SPOKE_VCN_OCID2>
-    ```
+
+For exact commands and options, see **[Networking/README.md](Networking/README.md)**.
 
 ### 📜 Key Scripts
 
@@ -56,27 +44,8 @@ This module automates the setup of cross-region replication for disaster recover
 
 ### 📍 Quick Start
 
-```bash
-git clone https://github.com/mmitkees/OCI-Automation.git
-```
-
-```bash
-cd OCI-Automation
-```
-
-```bash
-python3 Storage/Enable_Object_Storage_replication.py
-```
-
-```bash
-# Example: Silent mode
-python3 Storage/Enable_Object_Storage_replication.py --src me-abudhabi-1 --dest eu-zurich-1 --compartment <OCID> --yes
-```
-
-```bash
-# Example: Enable Block Volume replication via SDK
-python3 Storage/enable_cross_region_replication_sdk.py --src me-abudhabi-1 --dest eu-zurich-1 --compartment <OCID> --yes
-```
+For all storage commands and examples (interactive and silent modes), see:
+- **[Storage/README.md](Storage/README.md)**
 
 > [!TIP]
 > Check out the [Storage/README.md](Storage/README.md) for full usage instructions, CLI flags, and SDK code examples.
