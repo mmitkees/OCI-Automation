@@ -1,6 +1,6 @@
 # 📦 OCI Storage Automation
 
-This directory contains scripts to automate cross-region replication for OCI Block Storage and Object Storage.
+This directory contains Python scripts to automate cross-region replication for OCI Block Storage and Object Storage.
 
 ## 🚀 Overview
 
@@ -10,7 +10,6 @@ The scripts in this directory are designed to simplify the process of setting up
 
 -   **OCI CLI**: Installed and configured (`oci setup config`).
 -   **Python 3.10+**: With the `oci` package installed (`pip install oci`).
--   **jq**: Required for the shell script to parse JSON output.
 -   **Permissions**: Your user must have permissions to manage:
     -   Volumes/Boot Volumes in the source and destination regions.
     -   Object Storage buckets in the source and destination regions.
@@ -20,7 +19,7 @@ The scripts in this directory are designed to simplify the process of setting up
 
 ## 🏗 Key Scripts
 
-### 1. Object Storage Replication (`Enable_Object_Storage_replication.sh`)
+### 1. Object Storage Replication (`Enable_Object_Storage_replication.py`)
 
 This script automates the creation of cross-region replication policies for Object Storage buckets. It ensures that any file uploaded to a source bucket is automatically copied to a destination bucket in a different region.
 
@@ -35,15 +34,25 @@ This script automates the creation of cross-region replication policies for Obje
 
 #### Usage:
 ```bash
-# Interactive mode
-./Enable_Object_Storage_replication.sh
+# Example 1: Interactive mode (shows prompts + compartment menu)
+python3 Enable_Object_Storage_replication.py
 
-# CLI mode
-./Enable_Object_Storage_replication.sh \
+# Example 2: Silent mode (non-interactive)
+python3 Enable_Object_Storage_replication.py \
     --src me-abudhabi-1 \
     --dest eu-zurich-1 \
     --compartment <COMPARTMENT_OCID> \
     --yes
+```
+
+#### Easy Run (from fresh clone)
+
+From repository root:
+
+```bash
+git clone https://github.com/mmitkees/OCI-Automation.git
+cd OCI-Automation
+python3 Storage/Enable_Object_Storage_replication.py
 ```
 
 ---
@@ -74,10 +83,11 @@ python3 enable_cross_region_replication_sdk.py \
 
 ## 🛠 API & SDK Implementation Details
 
-### Object Storage API (Bash/CLI)
-The script uses the following OCI CLI commands:
-- `oci os replication create-replication-policy`: To bind the source bucket to the destination.
-- `oci os bucket update --versioning Enabled`: Core requirement for replication.
+### Object Storage API (Python SDK)
+The script uses OCI Python SDK methods such as:
+- `ObjectStorageClient.create_replication_policy`: To bind the source bucket to destination.
+- `ObjectStorageClient.update_bucket`: To enforce source/destination versioning requirements.
+- `IdentityClient.create_policy` / `IdentityClient.update_policy`: To manage service IAM policy statements.
 
 ### Volume Replication (Python SDK)
 The script utilizes the `update_volume` and `update_boot_volume` methods:

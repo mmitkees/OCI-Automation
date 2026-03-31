@@ -57,6 +57,11 @@ This module automates the setup of cross-region replication for disaster recover
 ### 📍 Quick Start
 
 ```bash
+# Clone and run Object Storage replication (interactive)
+git clone https://github.com/mmitkees/OCI-Automation.git
+cd OCI-Automation
+python3 Storage/Enable_Object_Storage_replication.py
+
 # Example: Enable Block Volume replication via SDK
 python3 Storage/enable_cross_region_replication_sdk.py --src me-abudhabi-1 --dest eu-zurich-1 --compartment <OCID> --yes
 ```
@@ -76,7 +81,7 @@ python3 Storage/enable_cross_region_replication_sdk.py --src me-abudhabi-1 --des
 │   └── destroy_hub_vcn.py
 ├── Storage/             # Object Storage & Volume replication
 │   ├── README.md       # Detailed storage documentation & API usage
-│   ├── Enable_Object_Storage_replication.sh
+│   ├── Enable_Object_Storage_replication.py
 │   └── enable_cross_region_replication_sdk.py
 ├── keys/                # Secure storage for API/SSH keys (Ignored by Git)
 └── README.md            # This file
