@@ -2,6 +2,20 @@
 
 This folder contains scripts to provision a Hub-and-Spoke network with an OCI Network Firewall (NGFW).
 
+## Getting Started (Clone & Navigate)
+
+```bash
+git clone https://github.com/mmitkees/OCI-Automation.git
+```
+
+```bash
+cd OCI-Automation
+```
+
+```bash
+cd Networking
+```
+
 ## Deployment Workflow
 
 To avoid spoke downtime during the 40-minute firewall provisioning window, the deployment is split into two phases:
