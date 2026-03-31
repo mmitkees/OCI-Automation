@@ -33,16 +33,17 @@ This script automates the creation of cross-region replication policies for Obje
 -   **Bucket Setup**: Ensures the destination bucket exists and that versioning is correctly configured (Enabled on source, Suspended on destination).
 
 #### Usage:
-```bash
-# Example 1: Interactive mode (shows prompts + compartment menu)
-python3 Enable_Object_Storage_replication.py
 
-# Example 2: Silent mode (non-interactive)
-python3 Enable_Object_Storage_replication.py \
-    --src me-abudhabi-1 \
-    --dest eu-zurich-1 \
-    --compartment <COMPARTMENT_OCID> \
-    --yes
+Example 1: Interactive mode (shows prompts + compartment menu)
+
+```bash
+python3 Enable_Object_Storage_replication.py
+```
+
+Example 2: Silent mode (non-interactive)
+
+```bash
+python3 Enable_Object_Storage_replication.py --src me-abudhabi-1 --dest eu-zurich-1 --compartment <COMPARTMENT_OCID> --yes
 ```
 
 #### Easy Run (from fresh clone)
@@ -51,7 +52,13 @@ From repository root:
 
 ```bash
 git clone https://github.com/mmitkees/OCI-Automation.git
+```
+
+```bash
 cd OCI-Automation
+```
+
+```bash
 python3 Storage/Enable_Object_Storage_replication.py
 ```
 
@@ -77,32 +84,6 @@ python3 enable_cross_region_replication_sdk.py \
     --dest eu-zurich-1 \
     --compartment <COMPARTMENT_OCID> \
     --yes
-```
-
----
-
-## 🛠 API & SDK Implementation Details
-
-### Object Storage API (Python SDK)
-The script uses OCI Python SDK methods such as:
-- `ObjectStorageClient.create_replication_policy`: To bind the source bucket to destination.
-- `ObjectStorageClient.update_bucket`: To enforce source/destination versioning requirements.
-- `IdentityClient.create_policy` / `IdentityClient.update_policy`: To manage service IAM policy statements.
-
-### Volume Replication (Python SDK)
-The script utilizes the `update_volume` and `update_boot_volume` methods:
-
-```python
-# Example for Block Volume using SDK
-update_details = oci.core.models.UpdateVolumeDetails(
-    block_volume_replicas=[
-        oci.core.models.BlockVolumeReplicaDetails(
-            availability_domain=dest_ad,
-            display_name="MyReplica"
-        )
-    ]
-)
-response = core_client.update_volume(volume_id=vol_id, update_volume_details=update_details)
 ```
 
 ---
