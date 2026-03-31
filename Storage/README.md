@@ -74,16 +74,17 @@ This Python script uses the OCI SDK to enable native cross-region replication fo
 -   **Status Awareness**: Skips volumes that already have active replicas to the target AD.
 
 #### Usage:
-```bash
-# Interactive mode
-python3 enable_cross_region_replication_sdk.py
 
-# CLI mode
-python3 enable_cross_region_replication_sdk.py \
-    --src me-abudhabi-1 \
-    --dest eu-zurich-1 \
-    --compartment <COMPARTMENT_OCID> \
-    --yes
+Example 1: Interactive mode
+
+```bash
+python3 enable_cross_region_replication_sdk.py
+```
+
+Example 2: Silent mode (non-interactive)
+
+```bash
+python3 enable_cross_region_replication_sdk.py --src me-abudhabi-1 --dest eu-zurich-1 --compartment <COMPARTMENT_OCID> --yes
 ```
 
 ---
